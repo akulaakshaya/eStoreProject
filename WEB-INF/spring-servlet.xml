@@ -55,9 +55,16 @@
     <bean id="customerdao" class="eStoreProduct.DAO.customerDAOImp" autowire="byName"/> 
     
     
+    
+    <!-- byName example -->
+    <bean id="cartdao" class="eStoreProduct.DAO.cartDAOImp" autowire="byName"/> 
+    
+    
     <!-- Configure the ProductDAO bean -->
     <bean id="productDAO" class="eStoreProduct.DAO.ProductDAO" />
     <bean id="catDAO" class="eStoreProduct.DAO.CategoryDAO" />
+    
+    
 
     <!-- Configure the ProductService bean -->
     <bean id="productService" class="eStoreProduct.ProductsService.ProductService">

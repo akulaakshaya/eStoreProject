@@ -1,5 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
-    pageEncoding="ISO-8859-1"%>
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1" pageEncoding="ISO-8859-1"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -62,51 +61,84 @@
     input[type="submit"]:hover {
       background-color: #0056b3;
     }
-    
-    #otpTextarea {
-      display: none;
-      margin-bottom: 20px;
-    }
   </style>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script>
-    $(document).ready(function() {
-      $("form").submit(function(e) {
-        e.preventDefault(); // Prevent form submission
-        var email = $("#email").val();
-        
-        // Make an AJAX call to submit the email
-        $.ajax({
-          type: "POST",
-          url: "otpAction", // Replace with the URL to submit the email
-          data: { email: email },
-          success: function(response) {
-            // On success, show the OTP textarea
-            $("#otpTextarea").show();
-          },
-          error: function() {
-            // Handle error case
-            alert("Error occurred. Please try again later.");
-          }
-        });
+    var otp1;
+
+    function sendmail() {
+      var email = $("#email").val();
+      $.ajax({
+        type: "POST",
+        url: "otpAction",
+        data: { email: email },
+        success: function(response) {
+          otp1 = response;
+        },
+        error: function() {
+          alert("Error occurred. Please try again later.");
+        }
       });
-    });
+    }
+
+    function validateOTP() {
+      var otp2 = $("#otpTextarea").val();
+      $.ajax({
+        type: "POST",
+        url: "validateOTP",
+        data: { otp12: otp2 },
+        success: function(response) {
+          if (response !== "invalid") {
+            var containerDiv = $("#contId");
+            containerDiv.html('<form action="updatepwd" id="signup-form">' +
+              '<label>Password:</label>' +
+              '<input type="password" class="form-control" id="psd1" name="psd1" required>' +
+              '<label>Confirm Password:</label>' +
+              '<input type="password" class="form-control" id="psd2" name="psd2" required>' +
+              '<div><span id="pmsg"></span></div>' +
+              '<button type="button" onclick="pwd()">Update Password</button>' +
+              '</form>');
+          } else {
+            var errorSpan = $("#sid");
+            errorSpan.text("OTP Mis-Matched");
+          }
+        },
+        error: function() {
+          alert("Error occurred. Please try again later.");
+        }
+      });
+    }
+
+    function pwd() {
+      var password = $("#psd1").val();
+      var confirmPassword = $("#psd2").val();
+      var passwordMessage = $("#pmsg");
+
+      if (password !== confirmPassword) {
+        passwordMessage.text("Passwords do not match");
+        return false;
+      } else {
+        passwordMessage.text("");
+        $("#signup-form").submit();
+      }
+    }
   </script>
 </head>
 <body>
-  <div class="container">
+  <div class="container" id="contId">
     <h2>Forgot Password</h2>
     <form>
-      <div class="form-group" action="otpAction" method="post">
+      <div class="form-group">
         <label for="email">Email</label>
         <input type="email" class="form-control" id="email" required>
       </div>
-      <button type="submit" class="btn btn-primary">Send OTP</button>
+      <button type="button" class="btn btn-primary" onclick="sendmail()">Send OTP</button>
+      <div><span id="sid"></span></div>
     </form>
     <input type="text" id="otpTextarea" class="form-control" rows="3" placeholder="Enter OTP">
-    <button id="otpSubmitBtn" class="btn btn-primary mt-2">Submit</button>
+    <button id="otpSubmitBtn" class="btn btn-primary mt-2" onclick="validateOTP()">Submit</button>
   </div>
-
+ 
   <!-- Include Bootstrap JS -->
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>

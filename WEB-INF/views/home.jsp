@@ -2,16 +2,159 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%> 
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@page import="eStoreProduct.model.custCredModel" %>
 <!DOCTYPE html>
 <html>
 <head>
   <title>SLAM Store</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.2/css/bootstrap.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.2/js/bootstrap.bundle.min.js"></script>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+ <script src="https://code.jquery.com/jquery-3.7.0.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script>
+    jQuery(document).ready(function($) {
+      function loadCategories() {
+        $.ajax({
+          url: "CategoriesServlet",
+          method: 'GET',
+          success: function(response) {
+            $('#catg').html(response);
+          },
+          error: function(xhr, status, error) {
+            console.log('AJAX Error: ' + error);
+          }
+        });
+      }
+
+      loadCategories(); // Call the loadCategories function when the page loads
+
+      $('#catg').change(function() {
+        var category = $("#catg").val();
+        $.ajax({
+          url: "products",
+          method: 'GET',
+          data: { category: category },
+          success: function(response) {
+            $('#transitionSlideShowPage').html(response);
+          },
+          error: function(xhr, status, error) {
+            console.log('AJAX Error: ' + error);
+          }
+        });
+      });
+      window.onload = function() {
+    	  loadCategories(); // Call the loadCategories function when the window is loaded
+    	};
+      var slides = $('.slide');
+      var currentSlide = 0;
+
+      // Function to show the current slide
+      function showSlide() {
+        // Hide all slides
+        slides.hide();
+
+        // Show the current slide
+        slides.eq(currentSlide).show();
+      }
+
+      // Function to move to the next slide
+      function nextSlide() {
+        currentSlide++;
+        if (currentSlide >= slides.length) {
+          currentSlide = 0;
+        }
+        showSlide();
+      }
+
+      // Start the slideshow
+      setInterval(nextSlide, 3000); // Change slide every 3 seconds
+    });
+  </script>
+
   
-  <style>
+  
+  <!-- second styling -->
+<!-- <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    
+    header {
+      background-color: #333;
+      color: #fff;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    nav ul {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+    }
+    
+    nav ul li {
+      display: inline;
+      margin-right: 10px;
+    }
+    
+    nav ul li a {
+      color: #fff;
+      text-decoration: none;
+      padding: 10px 20px;
+    }
+    
+    nav ul li a:hover {
+      background-color: #555;
+    }
+    
+    .search-bar {
+      text-align: center;
+      padding: 20px;
+      background-color: #f2f2f2;
+    }
+    
+    .product-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    .product-card {
+      width: 250px;
+      margin: 20px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 10px;
+      text-align: center;
+    }
+    
+    .product-card img {
+      width: 100%;
+      max-height: 200px;
+      object-fit: cover;
+      margin-bottom: 10px;
+    }
+    
+    .product-card h3 {
+      margin: 10px 0;
+    }
+    
+    .slide {
+      display: none;
+    }
+    
+    .slide.active {
+      display: block;
+    }
+  </style>
+ -->
+ 
+   <style>
    
    
    
@@ -173,25 +316,36 @@
     display: block;
     margin-bottom: 5px;
     white-space: nowrap; /* Ensures the content stays in a single line */
+    }
+    nav .dropdown {
+      position: relative;
+    }
+
+    nav .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: #f9f9f9;
+      min-width: 160px;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+      z-index: 1;
+    }
+    
   }
     
   </style>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
-<body>
+<body >
   <header>
     <h1>SLAM Store</h1>
     <nav>
       <ul>
         <li><a href="#">Home</a></li>
         <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown">Products</a>
-          <ul class="dropdown-menu">
-            <%-- Dynamically populate the categories --%>
-            <c:forEach items="${categories}" var="category">
-              <li><a href="prod.jsp?category=${category}">${category}</a></li>
-            </c:forEach>
-          </ul>
+          <form action="/process-category" method="POST">
+            <select name="catg" id="catg"></select>
+            <div id="display"></div>
+          </form>
         </li>
         <li><a href="#">About Us</a></li>
         <li><a href="#">Contact</a></li>
@@ -223,7 +377,7 @@
   </div>
 
   <main>
-  
+  <div id="prod"></div>
   <div id="transitionSlideShowPage">
     <div class="slideshow-container">
       <div class="slide active">
@@ -244,6 +398,8 @@
     
     
     
+  <!-- 
+   modal WINDOW PROFILE PAGE
     <div id="profileCustomer">
     
     </div>
@@ -271,7 +427,7 @@
       </div>
     </div>
   </div>
-</div>
+</div> -->
     
     
      <div class="container mt-5">
@@ -286,15 +442,26 @@
                             <h5 class="card-title">${product.name}</h5>
                             <p class="card-text">${product.description}</p>
                             <p class="card-text">${product.price}</p>
-                            <button class="btn btn-primary">Add to Cart</button>
-                            <button class="btn btn-secondary">Add to Wishlist</button>
+                            <button  class="btn btn-primary" id="cart" onclick="addToCart()">Add to Cart</button>
+                            <button class="btn btn-secondary" id="wishlist" onclick="addToWishList()">Add to Wishlist</button>
                         </div>
                     </div>
                 </div>
             </c:forEach>
         </div>
     </div>
+   
     
+    <c:set var="customer" value="${cust1}" />
+    	<script>
+    	function addToCart(){
+    	    var customerData = ${customer};
+    	    // Now you can use the 'customerData' variable in your JavaScript code
+    	    console.log(customerData.custId);
+    	    System.out.println( "hi"+customerData);
+    	}  
+    	    	</script>
+  
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
